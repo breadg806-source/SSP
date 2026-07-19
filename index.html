@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Structures of Globalization — Study Deck</title>
+<style>
+  body { margin: 0; padding: 24px 12px; background: #ded4b8; min-height:100vh; }
+  #glz-root {
+    --ink:#0c2b27;
+    --sea:#0e3b36;
+    --sea-deep:#082622;
+    --paper:#f2ecdd;
+    --paper-dim:#e8dfc9;
+    --emerald:#2f9e6f;
+    --emerald-dark:#1f6e4c;
+    --gold:#c99a3e;
+    --rust:#b3502e;
+    --line: rgba(12,43,39,0.18);
+    font-family: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    color: var(--ink);
+    background: var(--paper);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(12,43,39,0.08) 1px, transparent 0);
+    background-size: 18px 18px;
+    border-radius: 18px;
+    padding: 0;
+    max-width: 900px;
+    margin: 0 auto;
+    overflow: hidden;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+  }
+  #glz-root * { box-sizing: border-box; }
+  .glz-sans { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .glz-mono { font-family: "SFMono-Regular", Menlo, Consolas, monospace; }
+
+  /* ---------- Header ---------- */
+  .glz-header {
+    background: var(--sea);
+    color: var(--paper);
+    padding: 28px 28px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .glz-header::before {
+    content:"";
+    position:absolute; inset:0;
+    background-image: repeating-linear-gradient(90deg, rgba(242,236,221,0.06) 0 2px, transparent 2px 26px);
+    pointer-events:none;
+  }
+  .glz-route {
+    position:absolute; right:-30px; top:-30px; width:220px; height:220px;
+    border-radius:50%; border:1.5px dashed rgba(242,236,221,0.25);
+  }
+  .glz-route.two { right:20px; top:60px; width:120px; height:120px; border-color: rgba(201,154,62,0.35); }
+  .glz-eyebrow {
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); font-weight: 600; margin: 0 0 8px;
+  }
+  .glz-title { font-size: 28px; margin: 0; letter-spacing: 0.3px; position:relative; }
+  .glz-sub { margin: 8px 0 0; font-size: 14px; color: rgba(242,236,221,0.75); font-family: -apple-system, "Segoe UI", sans-serif; position:relative;}
+
+  .glz-tabs {
+    display:flex; gap: 0; margin-top: 22px; position:relative;
+    border-top: 1px solid rgba(242,236,221,0.2);
+    padding-top: 14px;
+  }
+  .glz-tab {
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    background: transparent; border: none; cursor: pointer;
+    color: rgba(242,236,221,0.55); font-size: 13.5px; font-weight: 600;
+    letter-spacing: 0.5px; padding: 8px 18px; border-radius: 999px;
+    transition: all .2s ease;
+  }
+  .glz-tab.active { background: var(--paper); color: var(--sea-deep); }
+  .glz-tab:hover:not(.active) { color: var(--paper); }
+
+  /* ---------- Body ---------- */
+  .glz-body { padding: 26px 28px 30px; }
+  .glz-panel { display:none; }
+  .glz-panel.active { display:block; }
+
+  .glz-scoreboard {
+    display:flex; gap: 10px; margin-bottom: 18px; font-family: -apple-system, "Segoe UI", sans-serif;
+  }
+  .glz-chip {
+    flex:1; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+    background: rgba(255,255,255,0.4);
+  }
+  .glz-chip .n { font-size: 20px; font-weight: 700; font-family: Georgia, serif; }
+  .glz-chip .l { font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px; opacity: 0.65; }
+  .glz-chip.correct .n { color: var(--emerald-dark); }
+  .glz-chip.wrong .n { color: var(--rust); }
+
+  .glz-progress-track {
+    height: 6px; border-radius: 4px; background: var(--paper-dim); margin-bottom: 22px; overflow:hidden;
+  }
+  .glz-progress-fill { height: 100%; background: linear-gradient(90deg, var(--emerald), var(--gold)); width:0%; transition: width .35s ease; }
+
+  /* ---------- Flashcard ---------- */
+  .glz-card-stage { display:flex; flex-direction:column; align-items:center; }
+  .glz-count-label {
+    font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; letter-spacing: 1.5px;
+    text-transform:uppercase; opacity:0.6; margin-bottom: 10px;
+  }
+  .glz-flip-wrap { perspective: 1400px; width: 100%; max-width: 560px; height: 300px; margin-bottom: 18px; }
+  .glz-flip-inner {
+    position:relative; width:100%; height:100%; transition: transform .55s cubic-bezier(.4,.2,.2,1);
+    transform-style: preserve-3d; cursor:pointer;
+  }
+  .glz-flip-inner.flipped { transform: rotateY(180deg); }
+  .glz-face {
+    position:absolute; inset:0; backface-visibility:hidden; border-radius: 14px;
+    border: 1.5px dashed var(--sea); padding: 26px; display:flex; flex-direction:column;
+    justify-content:center; background: var(--paper);
+  }
+  .glz-face::before {
+    content:""; position:absolute; inset:6px; border:1px solid var(--line); border-radius:9px; pointer-events:none;
+  }
+  .glz-face-front { background: var(--paper); }
+  .glz-face-back { transform: rotateY(180deg); background: #fbf8ef; }
+  .glz-face-tag {
+    font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--emerald-dark); font-weight:700; margin-bottom: 12px;
+  }
+  .glz-face-back .glz-face-tag { color: var(--gold); }
+  .glz-face-text { font-size: 19px; line-height: 1.45; }
+  .glz-face-back .glz-face-text { font-size: 16.5px; font-family: -apple-system, "Segoe UI", sans-serif; line-height: 1.55; }
+  .glz-hint { position:absolute; bottom:14px; right:18px; font-family: -apple-system, "Segoe UI", sans-serif; font-size:11px; opacity:0.45; }
+
+  .glz-stamp {
+    position:absolute; top:18px; right:18px; border:3px solid; border-radius:8px;
+    padding: 4px 10px; font-family: -apple-system, "Segoe UI", sans-serif; font-weight:800;
+    font-size: 13px; letter-spacing: 1.5px; transform: rotate(-8deg); opacity:0.9;
+  }
+  .glz-stamp.tama { color: var(--emerald-dark); border-color: var(--emerald-dark); }
+  .glz-stamp.mali { color: var(--rust); border-color: var(--rust); }
+
+  .glz-grade-row { display:flex; gap: 12px; width:100%; max-width:560px; }
+  .glz-btn {
+    font-family: -apple-system, "Segoe UI", sans-serif; font-weight:700; font-size: 14px;
+    border-radius: 10px; padding: 13px 16px; border: none; cursor:pointer; flex:1;
+    letter-spacing: 0.3px; transition: transform .12s ease, opacity .12s ease;
+  }
+  .glz-btn:active { transform: scale(0.97); }
+  .glz-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .glz-btn-flip { background: var(--sea); color: var(--paper); }
+  .glz-btn-correct { background: var(--emerald); color: white; }
+  .glz-btn-wrong { background: var(--rust); color: white; }
+  .glz-btn-ghost { background: transparent; border: 1.5px solid var(--sea); color: var(--sea); }
+  .glz-btn-gold { background: var(--gold); color: var(--sea-deep); }
+
+  .glz-nav-row { display:flex; justify-content: space-between; width:100%; max-width:560px; margin-top:14px; }
+  .glz-nav-btn {
+    font-family: -apple-system, "Segoe UI", sans-serif; font-size:12.5px; font-weight:600;
+    background:none; border:none; color: var(--sea); opacity:0.65; cursor:pointer;
+  }
+  .glz-nav-btn:hover { opacity:1; }
+  .glz-nav-btn:disabled { opacity: 0.25; cursor:not-allowed; }
+
+  /* ---------- Quiz ---------- */
+  .glz-quiz-q {
+    font-size: 19px; line-height:1.5; margin-bottom: 18px; padding: 18px 20px;
+    border-left: 3px solid var(--gold); background: rgba(255,255,255,0.45); border-radius: 0 10px 10px 0;
+  }
+  .glz-options { display:flex; flex-direction:column; gap:10px; margin-bottom: 18px; }
+  .glz-opt {
+    font-family: -apple-system, "Segoe UI", sans-serif; text-align:left; font-size:14.5px;
+    padding: 13px 16px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--paper);
+    cursor:pointer; display:flex; gap:10px; align-items:flex-start; line-height:1.4;
+  }
+  .glz-opt:hover:not(.locked) { border-color: var(--sea); }
+  .glz-opt .k {
+    flex-shrink:0; width:22px; height:22px; border-radius:50%; border:1.5px solid var(--sea);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700;
+  }
+  .glz-opt.correct { background: rgba(47,158,111,0.16); border-color: var(--emerald-dark); }
+  .glz-opt.correct .k { background: var(--emerald-dark); color:white; border-color: var(--emerald-dark); }
+  .glz-opt.wrong { background: rgba(179,80,46,0.14); border-color: var(--rust); }
+  .glz-opt.wrong .k { background: var(--rust); color:white; border-color: var(--rust); }
+  .glz-opt.locked { cursor: default; }
+
+  /* ---------- Summary ---------- */
+  .glz-summary { text-align:center; padding: 20px 10px; }
+  .glz-summary-stamp {
+    width: 130px; height:130px; border-radius:50%; border: 4px solid var(--sea); margin: 0 auto 18px;
+    display:flex; align-items:center; justify-content:center; flex-direction:column; transform: rotate(-6deg);
+  }
+  .glz-summary-stamp .pct { font-size: 30px; font-weight:800; font-family: Georgia, serif; }
+  .glz-summary-stamp .lbl { font-family:-apple-system,sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; }
+  .glz-summary-row { display:flex; gap:14px; justify-content:center; margin: 18px 0; flex-wrap:wrap; }
+  .glz-review-list { text-align:left; max-height: 220px; overflow-y:auto; border:1px solid var(--line); border-radius:10px; padding: 12px 16px; margin-top: 12px; background: rgba(255,255,255,0.4);}
+  .glz-review-item { font-family:-apple-system,sans-serif; font-size:13px; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+  .glz-review-item:last-child { border-bottom:none; }
+  .glz-review-item b { color: var(--sea-deep); }
+
+  .glz-grid {
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(34px,1fr)); gap:6px; margin-top:16px;
+  }
+  .glz-dot { aspect-ratio:1; border-radius:6px; border:1px solid var(--line); font-size:9px; }
+  .glz-dot.done-correct { background: var(--emerald); border-color: var(--emerald-dark); }
+  .glz-dot.done-wrong { background: var(--rust); border-color: var(--rust); }
+
+  @media (max-width: 560px) {
+    .glz-header { padding: 22px 18px 16px; }
+    .glz-body { padding: 20px 18px 24px; }
+    .glz-title { font-size: 22px; }
+    .glz-flip-wrap { height: 340px; }
+    .glz-face-text { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="glz-root">
+  <div class="glz-header">
+    <div class="glz-route"></div>
+    <div class="glz-route two"></div>
+    <p class="glz-eyebrow">Group 2 &middot; Study Deck</p>
+    <h1 class="glz-title">Structures of Globalization</h1>
+    <p class="glz-sub">50 flashcards to flip, 50 questions to answer &mdash; track how many you get right and wrong.</p>
+    <div class="glz-tabs">
+      <button class="glz-tab active" data-tab="cards">Flashcards</button>
+      <button class="glz-tab" data-tab="quiz">Quiz</button>
+    </div>
+  </div>
+
+  <div class="glz-body">
+    <!-- FLASHCARDS PANEL -->
+    <div class="glz-panel active" id="glz-panel-cards">
+      <div class="glz-scoreboard">
+        <div class="glz-chip correct"><div class="n" id="glz-fc-correct">0</div><div class="l">Correct</div></div>
+        <div class="glz-chip wrong"><div class="n" id="glz-fc-wrong">0</div><div class="l">Wrong</div></div>
+        <div class="glz-chip"><div class="n" id="glz-fc-left">50</div><div class="l">Remaining</div></div>
+      </div>
+      <div class="glz-progress-track"><div class="glz-progress-fill" id="glz-fc-progress"></div></div>
+
+      <div id="glz-fc-session" class="glz-card-stage">
+        <div class="glz-count-label" id="glz-fc-count">Card 1 of 50</div>
+        <div class="glz-flip-wrap">
+          <div class="glz-flip-inner" id="glz-fc-inner">
+            <div class="glz-face glz-face-front">
+              <div class="glz-face-tag">Question</div>
+              <div class="glz-face-text" id="glz-fc-front-text"></div>
+              <div class="glz-hint">tap to flip &rarr;</div>
+            </div>
+            <div class="glz-face glz-face-back">
+              <div id="glz-fc-stamp-slot"></div>
+              <div class="glz-face-tag">Answer</div>
+              <div class="glz-face-text" id="glz-fc-back-text"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glz-grade-row" id="glz-fc-flip-row">
+          <button class="glz-btn glz-btn-flip" id="glz-fc-flip-btn">Flip the Card</button>
+        </div>
+        <div class="glz-grade-row" id="glz-fc-grade-row" style="display:none;">
+          <button class="glz-btn glz-btn-wrong" id="glz-fc-mark-wrong">✗ I got it wrong</button>
+          <button class="glz-btn glz-btn-correct" id="glz-fc-mark-correct">✓ I got it right</button>
+        </div>
+
+        <div class="glz-nav-row">
+          <button class="glz-nav-btn" id="glz-fc-prev">&larr; Previous</button>
+          <button class="glz-nav-btn" id="glz-fc-restart">Start over</button>
+        </div>
+      </div>
+
+      <div id="glz-fc-summary" style="display:none;"></div>
+    </div>
+
+    <!-- QUIZ PANEL -->
+    <div class="glz-panel" id="glz-panel-quiz">
+      <div class="glz-scoreboard">
+        <div class="glz-chip correct"><div class="n" id="glz-q-correct">0</div><div class="l">Correct</div></div>
+        <div class="glz-chip wrong"><div class="n" id="glz-q-wrong">0</div><div class="l">Wrong</div></div>
+        <div class="glz-chip"><div class="n" id="glz-q-left">50</div><div class="l">Remaining</div></div>
+      </div>
+      <div class="glz-progress-track"><div class="glz-progress-fill" id="glz-q-progress"></div></div>
+
+      <div id="glz-q-session">
+        <div class="glz-count-label" id="glz-q-count">Question 1 of 50</div>
+        <div class="glz-quiz-q" id="glz-q-text"></div>
+        <div class="glz-options" id="glz-q-options"></div>
+        <div class="glz-nav-row">
+          <span></span>
+          <button class="glz-btn glz-btn-gold" id="glz-q-next" style="max-width:160px; display:none;">Next &rarr;</button>
+        </div>
+        <div class="glz-nav-row">
+          <button class="glz-nav-btn" id="glz-q-restart">Start over</button>
+          <span></span>
+        </div>
+      </div>
+
+      <div id="glz-q-summary" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var FC = [
+    ["What is globalization?","The continuous process of connecting countries, economies, cultures, and people around the world — enabling the flow of goods, capital, information, and labor across borders."],
+    ["Is globalization a one-time event in history?","No — it is a continuous and ever-evolving process, not just a historical event."],
+    ["What forces drive globalization?","Technology, trade, policy, and human movement."],
+    ["Give an example of globalization in electronics.","Buying a cellphone assembled in China but designed in the U.S."],
+    ["What example of globalization is related to the Philippines?","OFW remittances sent back to the Philippines from other countries."],
+    ["What are the Four Foundations of Globalization?","Global Economy & Market Integration, and Global Interstate System & Governance."],
+    ["Define 'Global Economy.'","The borderless system of goods, money, and labor that connects all countries."],
+    ["Define 'Market Integration.'","The removal of trade barriers to allow goods, services, and capital to flow freely around the world."],
+    ["Define 'Global Interstate System.'","Political interaction and diplomacy between sovereign nations."],
+    ["Define 'Contemporary Global Governance.'","International institutions that manage shared global problems — even though the benefits are not distributed equally."],
+    ["What are the three main flows of the global economy?","Trade, Financial Flows, and Labor Mobility."],
+    ["Define 'Trade' in the global economy.","The buying and selling of goods and services across borders."],
+    ["Give an example of a Financial Flow.","Foreign investments or remittances — such as OFW transfers to the Philippines."],
+    ["Define 'Labor Mobility.'","The movement of workers to other countries in search of opportunity."],
+    ["What historical roots created structural inequality in the global economy?","Colonial-era extraction — raw materials flowed from periphery nations to industrial cores, establishing dependency patterns."],
+    ["What happened at the Bretton Woods Conference (1944)?","The U.S. dollar was established as the global reserve currency; the IMF and World Bank were created; exchange rates were fixed to gold-backed USD."],
+    ["What was the 'Nixon Shock' of 1971?","The U.S. ended the gold backing of the dollar, which started floating exchange rates."],
+    ["What economic philosophy emerged in the 1980s?","Neoliberalism — free markets, deregulation, and privatization."],
+    ["What does the 'Washington Consensus' promote?","Open markets and fiscal austerity worldwide."],
+    ["What is a Global Value Chain?","Production spread across many countries — no single country makes a product alone (e.g., smartphone: US design, Taiwan chips, Congo raw materials, China/Vietnam assembly)."],
+    ["What does the 'Smile Curve' show?","Value is highest in R&D/design and branding/marketing; lowest in manufacturing in the middle."],
+    ["In 2026, what is challenging the dominance of the U.S. dollar?","BRICS Pay and gold-backed alternative systems."],
+    ["How high were global tariffs in the 1940s before they fell?","About 22% before gradually declining due to trade liberalization."],
+    ["What did GATT (1947) establish?","The first multilateral framework to reduce trade barriers and promote open markets among member nations."],
+    ["What organization replaced GATT in 1995?","The World Trade Organization (WTO), which strengthened enforcement and expanded its scope."],
+    ["What is the best example of market integration?","The EU Single Market — it allows the free movement of goods, services, capital, and workers among member states."],
+    ["What three financial crises are connected to capital account liberalization?","Mexico (1994–95), Asia (1997–98), and the Global Financial Crisis (2008)."],
+    ["How large are global remittances and which country relies heavily on them?","More than $800 billion globally; the Philippines relies heavily on OFW earnings."],
+    ["What was the 'China Shock' of 2001?","China's entry into the WTO accelerated manufacturing shifts, causing job displacement and wage suppression in developed economies."],
+    ["When did the U.S.-China tariff war begin and why?","In 2018, due to job losses and trade imbalances."],
+    ["How high did tariffs on some Chinese goods reach by 2025?","They exceeded 100% on select Chinese goods."],
+    ["What happened in February 2026 regarding tariffs?","The U.S. Supreme Court issued a landmark ruling against certain unilaterally imposed tariffs, placing limits on executive trade authority."],
+    ["What does Realism say about the world?","The world is anarchic — states prioritize their own interests, military security, and safety; conflict is unavoidable without a global authority."],
+    ["What does Liberalism say about global institutions?","Institutions like the UN, WTO, and IMF reduce conflict through cooperation, interdependence, and shared norms."],
+    ["What is the 'Security Dilemma'?","When one state's arms build-up causes insecurity in others, fueling cycles of conflict."],
+    ["Describe the shift in global polarity from the Cold War to 2026.","Bipolar (Cold War) → Unipolar (U.S. dominance post-1991) → Multipolar (China, India, and emerging powers, 2026)."],
+    ["What does World-Systems Theory describe?","The division of the world into Core, Semi-Periphery, and Periphery nations that reinforces structural inequality."],
+    ["What is the 'Thucydides Trap'?","When a rising power challenges a dominant one — for example, the Russia-Ukraine War reflecting multipolar tensions."],
+    ["How many permanent members does the UN Security Council have, and what power do they hold?","Five (U.S., UK, France, Russia, China), each holding veto power over binding resolutions."],
+    ["What does the WTO govern?","Global trade rules and dispute resolution."],
+    ["What is the IMF's role?","It monitors financial stability and provides emergency lending."],
+    ["What does the World Bank fund?","Development projects in lower-income nations."],
+    ["Give three key global frameworks for climate, rights, and development.","The Paris Agreement (2015), the Universal Declaration of Human Rights (1948), and the Sustainable Development Goals (SDGs) for 2030."],
+    ["What is the 'Democratic Deficit' in global governance?","Important decisions are made by unelected officials instead of being accountable to voters."],
+    ["What is the 'Enforcement Gap'?","There is no global authority that can compel compliance with international rules."],
+    ["What 'Parallel Systems' are BRICS and China building?","Alternatives such as the AIIB, SWIFT bypass systems, and BRICS Pay."],
+    ["What is the logical flow connecting the four foundations, according to the conclusion?","Economy drives flow → Market Integration breaks down barriers → the Interstate System is the political stage → Global Governance manages the system."],
+    ["What three key questions were asked in the conclusion?","Who makes the rules? Who benefits? Who is left behind?"],
+    ["According to the conclusion, are the structures of globalization neutral?","No — they reflect choices, interests, and inequalities."],
+    ["Who made this presentation (Group 2)?","Daryl James Veneracion, Jay Mark Flores, John Lhee Orellano, Katrina Aztuza, Lhian Rose Nanini, Kenji Mendoza, Jared Gonzales, and Sophia Brillantes."]
+  ];
+
+  var Q = [
+    ["Which is the best definition of globalization?", ["A one-time event only in the 20th century","The continuous process of connecting countries, economies, cultures, and people around the world","A military policy only","A law about a country's tariffs"], 1],
+    ["Which is an example of globalization in electronics?", ["A mango grown and sold in the same province","A cellphone designed in the U.S. but assembled in China","Cloth sewn and sold at the market","A domestic bus"], 1],
+    ["What is called the Four Foundations of Globalization?", ["Trade, Tariffs, Currency, Diplomacy","Global Economy & Market Integration, Global Interstate System & Governance","Capitalism, Socialism, Communism, Democracy","Import, Export, Tax, Subsidy"], 1],
+    ["'Market Integration' refers to:", ["The removal of trade barriers for the free flow of goods, services, and capital","Creating a new tariff between countries","Isolating the domestic market against foreign competition","A stock market crash"], 0],
+    ["The 'Global Interstate System' is mainly about:", ["Corporate mergers","Political interaction and diplomacy between sovereign nations","Currency exchange rates","Environmental regulation only"], 1],
+    ["What are the three main flows of the global economy?", ["Trade, Financial Flows, Labor Mobility","Tariffs, Sanctions, Embargoes","Import, Export, Barter","Banking, Insurance, Real Estate"], 0],
+    ["What pattern did colonial-era extraction create?", ["Equal industrial development everywhere","Structural inequalities/dependency — raw materials from the periphery to industrial cores","Rapid decolonization of trade","A universal currency union"], 1],
+    ["What was established at the Bretton Woods Conference (1944)?", ["The WTO","The Euro currency","The U.S. dollar as the global reserve currency, along with the IMF and World Bank","The EU Single Market"], 2],
+    ["The 'Nixon Shock' of 1971 was:", ["The U.S. ending the gold backing of the dollar","The creation of NAFTA","The founding of the WTO","The 2008 financial crisis"], 0],
+    ["What economic philosophy spread in the 1980s?", ["Keynesianism","Neoliberalism","Mercantilism","Protectionism"], 1],
+    ["What does the 'Washington Consensus' promote?", ["Closed borders and high tariffs","Open markets and fiscal austerity","State-owned enterprises only","Universal basic income"], 1],
+    ["Which correctly describes the global value chain of a smartphone?", ["One country alone does the design, chips, materials, and assembly","US design & R&D → Taiwan chips → Congo raw materials → China/Vietnam assembly → global distribution","Only European countries are involved","It happens within a single factory only"], 1],
+    ["In the 'Smile Curve,' where is value lowest?", ["R&D/design","Branding/marketing","Manufacturing/assembly in the middle","Retail sales"], 2],
+    ["In 2026, what is challenging the dominance of the U.S. dollar?", ["The Euro","BRICS Pay and gold-backed alternative systems","Bitcoin only","Japanese Yen"], 1],
+    ["What did GATT (1947) establish?", ["A military alliance","The first multilateral framework to reduce trade barriers","The United Nations","The gold standard"], 1],
+    ["What organization replaced GATT in 1995?", ["IMF","World Bank","WTO","OECD"], 2],
+    ["What was mentioned as a 'prime example' of market integration?", ["ASEAN","EU Single Market","NAFTA","Mercosur"], 1],
+    ["What financial crises are connected to capital account liberalization?", ["Mexico (1994–95), Asia (1997–98), Global (2008)","Great Depression (1929)","Dot-com bubble (2000)","Oil Crisis (1973)"], 0],
+    ["How much are global remittances, which the Philippines relies on?", ["$100 billion","$800 billion and up","$10 trillion","$50 billion"], 1],
+    ["What was the 'China Shock' (2001)?", ["China leaving the UN","China joining the WTO, causing manufacturing shifts, job displacement, wage suppression","A stock market crash in China","Currency devaluation by China only"], 1],
+    ["When did the U.S.-China tariff war begin?", ["2001","2008","2018","2020"], 2],
+    ["By 2025, how high were tariffs on select Chinese goods?", ["Removed","Below 10%","Over 100%","Replaced with quotas only"], 2],
+    ["What happened in February 2026 regarding tariffs?", ["Congress imposed a new tariff","The U.S. Supreme Court ruled against certain unilateral tariffs","The WTO was dissolved","The EU joined NAFTA"], 1],
+    ["According to Realism, what characterizes the world?", ["The world is naturally cooperative","The world is anarchic — conflict is unavoidable without a global authority","Institutions always prevent war","Trade removes the need for military security"], 1],
+    ["According to Liberalism, what is the role of global institutions?", ["The UN, WTO, IMF reduce conflict through cooperation and interdependence","States should isolate themselves","War is always rational","Sovereignty should be abolished"], 0],
+    ["What is the 'Security Dilemma'?", ["A shortage of defense budget","One state's arms build-up causing insecurity in others","A peace treaty process","Cyber threats only"], 1],
+    ["What is the correct order of polarity shifts?", ["Multipolar → Unipolar → Bipolar","Bipolar (Cold War) → Unipolar (post-1991) → Multipolar (2026)","Unipolar → Multipolar → Bipolar","No shift occurred"], 1],
+    ["In World-Systems Theory, how is the world divided?", ["Developed and developing only","Core, Semi-Periphery, and Periphery nations","East and West","Democracy and autocracy"], 1],
+    ["What is the 'Thucydides Trap'?", ["When a rising power challenges the dominant one, often leading to conflict","A trade agreement between two allies","A currency peg system","A historic peace treaty"], 0],
+    ["Which conflict was mentioned as reflecting multipolar tensions in 2026?", ["Korean War","Russia-Ukraine War","Falklands War","Gulf War"], 1],
+    ["How many permanent members does the UN Security Council have?", ["3","5","10","15"], 1],
+    ["Who holds veto power in the UN Security Council?", ["US, UK, France, Russia, China","US, Germany, Japan, India, Brazil","US, Canada, Mexico, UK, France","All UN members"], 0],
+    ["What is the main role of the WTO?", ["Provide emergency lending","Govern global trade rules and dispute resolution","Fund infrastructure projects","Enforce human rights law"], 1],
+    ["What is the main role of the IMF?", ["Govern trade disputes","Monitor financial stability and provide emergency lending","Fund development projects only","Set global tariffs"], 1],
+    ["What is the main role of the World Bank?", ["Monitor currency exchange rates","Fund development projects in lower-income nations","Govern trade disputes","Issue the global reserve currency"], 1],
+    ["Which frameworks address climate, human rights, and development goals?", ["Paris Agreement (2015), UDHR (1948), SDGs (2030)","Kyoto Protocol only","Marshall Plan","Bretton Woods Agreement"], 0],
+    ["What does 'Democratic Deficit' mean?", ["Too many elections","Important decisions are made by unelected officials","Democracy spreads quickly","Very high voter turnout"], 1],
+    ["What is the 'Enforcement Gap'?", ["Lack of a global authority to compel compliance with rules","Lack of law enforcement officers","Lack of military spending","Weak local police"], 0],
+    ["What 'parallel systems' are BRICS and China building?", ["NATO and EU","AIIB, SWIFT bypass systems, BRICS Pay","UN and WTO","IMF and World Bank"], 1],
+    ["According to the conclusion, what is the correct logical flow?", ["Governance → Interstate System → Market Integration → Economy","Economy drives flow → Market Integration breaks down barriers → Interstate System is the political stage → Global Governance manages the system","Interstate System → Economy → Governance → Market Integration","There is no fixed flow"], 1],
+    ["What are the three key questions in the conclusion?", ["Who makes the rules? Who benefits? Who is left behind?","What is trade? What is tariff? What is currency?","Who wins the war? Who loses?","What is GDP? What is inflation? What is debt?"], 0],
+    ["According to the conclusion, are the structures of globalization neutral?", ["Yes, completely neutral","No, they reflect choices, interests, and inequalities","Neutral only in Europe","Economic only, not political"], 1],
+    ["What percentage were global tariffs in the 1940s before falling?", ["About 5%","About 22%","About 50%","About 75%"], 1],
+    ["What example of financial flow was mentioned regarding the Philippines?", ["Foreign direct investment in mining","OFW remittance transfers","Tourism income only","Government bonds"], 1],
+    ["In the context of the global economy, 'Trade' is:", ["The buying and selling of goods and services across borders","Currency exchange only","A military agreement","Cultural exchange programs"], 0],
+    ["'Labor Mobility' refers to:", ["Automation replacing workers","Workers moving to other countries in search of opportunity","Robots working in different countries","Domestic-only jobs"], 1],
+    ["Which group made the presentation 'Structures of Globalization'?", ["Group 1","Group 2","Group 3","Group 4"], 1],
+    ["Which best describes the shape of the 'smile curve'?", ["Value is highest in manufacturing","Value is highest at both ends (R&D/design and marketing/branding), lowest in the middle (manufacturing)","Value is equal at every stage","Value is highest in raw material extraction only"], 1],
+    ["Which body is central to the power structure of the Global Interstate System?", ["The G7","The UN Security Council","The World Bank Board","The WTO Appellate Body"], 1],
+    ["What does globalization enable the flow of, according to the definition?", ["Goods only","Capital only","Goods, capital, information, and labor","Information only"], 2]
+  ];
+
+  var fcState = FC.map(function(){ return null; }); // null | 'correct' | 'wrong'
+  var fcIdx = 0;
+  var qState = Q.map(function(){ return null; }); // null | selectedIndex
+  var qIdx = 0;
+
+  function $(id){ return document.getElementById(id); }
+
+  /* ===== TABS ===== */
+  var tabs = document.querySelectorAll('#glz-root .glz-tab');
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      tabs.forEach(function(x){ x.classList.remove('active'); });
+      t.classList.add('active');
+      document.querySelectorAll('#glz-root .glz-panel').forEach(function(p){ p.classList.remove('active'); });
+      $('glz-panel-' + t.dataset.tab).classList.add('active');
+    });
+  });
+
+  /* ===== FLASHCARDS ===== */
+  function renderFC(){
+    var total = FC.length;
+    var answered = fcState.filter(function(s){ return s !== null; }).length;
+    var correct = fcState.filter(function(s){ return s === 'correct'; }).length;
+    var wrong = fcState.filter(function(s){ return s === 'wrong'; }).length;
+
+    $('glz-fc-correct').textContent = correct;
+    $('glz-fc-wrong').textContent = wrong;
+    $('glz-fc-left').textContent = total - answered;
+    $('glz-fc-progress').style.width = (answered/total*100) + '%';
+
+    if (answered === total){
+      $('glz-fc-session').style.display = 'none';
+      $('glz-fc-summary').style.display = 'block';
+      renderFCSummary();
+      return;
+    }
+    $('glz-fc-session').style.display = 'flex';
+    $('glz-fc-summary').style.display = 'none';
+
+    $('glz-fc-count').textContent = 'Card ' + (fcIdx+1) + ' of ' + total;
+    $('glz-fc-front-text').textContent = FC[fcIdx][0];
+    $('glz-fc-back-text').textContent = FC[fcIdx][1];
+    $('glz-fc-inner').classList.remove('flipped');
+
+    var alreadyGraded = fcState[fcIdx] !== null;
+    $('glz-fc-flip-row').style.display = alreadyGraded ? 'none' : 'flex';
+    $('glz-fc-grade-row').style.display = 'none';
+
+    var stampSlot = $('glz-fc-stamp-slot');
+    stampSlot.innerHTML = '';
+    if (alreadyGraded){
+      var stampDiv = document.createElement('div');
+      stampDiv.className = 'glz-stamp ' + (fcState[fcIdx] === 'correct' ? 'tama' : 'mali');
+      stampDiv.textContent = fcState[fcIdx] === 'correct' ? 'CORRECT' : 'WRONG';
+      stampSlot.appendChild(stampDiv);
+      $('glz-fc-inner').classList.add('flipped');
+    }
+    $('glz-fc-prev').disabled = fcIdx === 0;
+  }
+
+  function renderFCSummary(){
+    var total = FC.length;
+    var correct = fcState.filter(function(s){ return s === 'correct'; }).length;
+    var wrong = fcState.filter(function(s){ return s === 'wrong'; }).length;
+    var pct = Math.round(correct/total*100);
+    var wrongItems = FC.map(function(item,i){ return {item:item, i:i}; }).filter(function(o){ return fcState[o.i] === 'wrong'; });
+
+    var html = '<div class="glz-summary">' +
+      '<div class="glz-summary-stamp"><div class="pct">' + pct + '%</div><div class="lbl">Score</div></div>' +
+      '<div class="glz-summary-row">' +
+        '<div class="glz-chip correct"><div class="n">' + correct + '</div><div class="l">Correct</div></div>' +
+        '<div class="glz-chip wrong"><div class="n">' + wrong + '</div><div class="l">Wrong</div></div>' +
+      '</div>';
+    if (wrongItems.length){
+      html += '<div class="glz-sans" style="font-size:12px; letter-spacing:1px; text-transform:uppercase; opacity:0.6; margin-top:6px;">Review the ones you missed</div>' +
+        '<div class="glz-review-list">' + wrongItems.map(function(o){
+          return '<div class="glz-review-item"><b>' + (o.i+1) + '.</b> ' + o.item[0] + '<br><span style="opacity:0.75;">&rarr; ' + o.item[1] + '</span></div>';
+        }).join('') + '</div>';
+    } else {
+      html += '<p class="glz-sans" style="opacity:0.7;">Perfect! You got all 50 flashcards right.</p>';
+    }
+    html += '</div>';
+    $('glz-fc-summary').innerHTML = html;
+  }
+
+  $('glz-fc-flip-btn').addEventListener('click', function(){
+    $('glz-fc-inner').classList.add('flipped');
+    $('glz-fc-flip-row').style.display = 'none';
+    $('glz-fc-grade-row').style.display = 'flex';
+  });
+  $('glz-fc-inner').addEventListener('click', function(){
+    if (fcState[fcIdx] === null && !this.classList.contains('flipped')){
+      $('glz-fc-flip-btn').click();
+    }
+  });
+  $('glz-fc-mark-correct').addEventListener('click', function(){
+    fcState[fcIdx] = 'correct';
+    advanceFC();
+  });
+  $('glz-fc-mark-wrong').addEventListener('click', function(){
+    fcState[fcIdx] = 'wrong';
+    advanceFC();
+  });
+  function advanceFC(){
+    if (fcIdx < FC.length - 1){ fcIdx++; }
+    renderFC();
+  }
+  $('glz-fc-prev').addEventListener('click', function(){
+    if (fcIdx > 0){ fcIdx--; renderFC(); }
+  });
+  $('glz-fc-restart').addEventListener('click', function(){
+    fcState = FC.map(function(){ return null; });
+    fcIdx = 0;
+    renderFC();
+  });
+
+  /* ===== QUIZ ===== */
+  function renderQ(){
+    var total = Q.length;
+    var answered = qState.filter(function(s){ return s !== null; }).length;
+    var correct = 0, wrong = 0;
+    qState.forEach(function(sel, i){
+      if (sel === null) return;
+      if (sel === Q[i][2]) correct++; else wrong++;
+    });
+
+    $('glz-q-correct').textContent = correct;
+    $('glz-q-wrong').textContent = wrong;
+    $('glz-q-left').textContent = total - answered;
+    $('glz-q-progress').style.width = (answered/total*100) + '%';
+
+    if (answered === total){
+      $('glz-q-session').style.display = 'none';
+      $('glz-q-summary').style.display = 'block';
+      renderQSummary();
+      return;
+    }
+    $('glz-q-session').style.display = 'block';
+    $('glz-q-summary').style.display = 'none';
+
+    $('glz-q-count').textContent = 'Question ' + (qIdx+1) + ' of ' + total;
+    var qd = Q[qIdx];
+    $('glz-q-text').textContent = qd[0];
+    var optsWrap = $('glz-q-options');
+    optsWrap.innerHTML = '';
+    var letters = ['A','B','C','D'];
+    var selected = qState[qIdx];
+
+    qd[1].forEach(function(optText, i){
+      var div = document.createElement('div');
+      div.className = 'glz-opt' + (selected !== null ? ' locked' : '');
+      if (selected !== null){
+        if (i === qd[2]) div.classList.add('correct');
+        else if (i === selected) div.classList.add('wrong');
+      }
+      div.innerHTML = '<span class="k">' + letters[i] + '</span><span>' + optText + '</span>';
+      if (selected === null){
+        div.addEventListener('click', function(){
+          qState[qIdx] = i;
+          renderQ();
+        });
+      }
+      optsWrap.appendChild(div);
+    });
+
+    $('glz-q-next').style.display = selected !== null ? 'block' : 'none';
+  }
+
+  function renderQSummary(){
+    var total = Q.length;
+    var correct = 0;
+    qState.forEach(function(sel, i){ if (sel === Q[i][2]) correct++; });
+    var wrong = total - correct;
+    var pct = Math.round(correct/total*100);
+    var wrongItems = Q.map(function(item,i){ return {item:item, i:i, sel:qState[i]}; }).filter(function(o){ return o.sel !== o.item[2]; });
+    var letters = ['A','B','C','D'];
+
+    var html = '<div class="glz-summary">' +
+      '<div class="glz-summary-stamp"><div class="pct">' + pct + '%</div><div class="lbl">Score</div></div>' +
+      '<div class="glz-summary-row">' +
+        '<div class="glz-chip correct"><div class="n">' + correct + '</div><div class="l">Correct</div></div>' +
+        '<div class="glz-chip wrong"><div class="n">' + wrong + '</div><div class="l">Wrong</div></div>' +
+      '</div>';
+    if (wrongItems.length){
+      html += '<div class="glz-sans" style="font-size:12px; letter-spacing:1px; text-transform:uppercase; opacity:0.6; margin-top:6px;">Review the ones you missed</div>' +
+        '<div class="glz-review-list">' + wrongItems.map(function(o){
+          return '<div class="glz-review-item"><b>' + (o.i+1) + '.</b> ' + o.item[0] +
+            '<br><span style="color:#b3502e;">Your answer: ' + letters[o.sel] + '. ' + o.item[1][o.sel] + '</span>' +
+            '<br><span style="color:#1f6e4c;">Correct answer: ' + letters[o.item[2]] + '. ' + o.item[1][o.item[2]] + '</span></div>';
+        }).join('') + '</div>';
+    } else {
+      html += '<p class="glz-sans" style="opacity:0.7;">Perfect! 50/50 correct.</p>';
+    }
+    html += '</div>';
+    $('glz-q-summary').innerHTML = html;
+  }
+
+  $('glz-q-next').addEventListener('click', function(){
+    if (qIdx < Q.length - 1){ qIdx++; renderQ(); }
+  });
+  $('glz-q-restart').addEventListener('click', function(){
+    qState = Q.map(function(){ return null; });
+    qIdx = 0;
+    renderQ();
+  });
+
+  renderFC();
+  renderQ();
+})();
+</script>
+</body>
+</html>
